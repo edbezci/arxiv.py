@@ -41,9 +41,7 @@ class Search(object):
     root_url = 'http://export.arxiv.org/api/'
     prune_keys = [
         'updated_parsed',
-        'published_parsed',
         'arxiv_primary_category',
-        'summary_detail',
         'author',
         'author_detail',
         'links',
@@ -176,7 +174,10 @@ class Search(object):
 
             yield results
 
-    def download(self, iterative=False):
+    
+
+
+    def download(self):
         """
         Triggers the download of the result of the given search query.
 
@@ -188,22 +189,13 @@ class Search(object):
             iterable: Either a list or a general iterator holding the result of the search query.
         """
         logger.info('Start downloading')
-        if iterative:
 
-            logger.info('Build iterator')
 
-            def iterator():
-                logger.info('Start iterating')
-                for result in self._get_next():
-                    for entry in result:
-                        yield entry
-            return iterator
-        else:
-            results = list()
-            for result in self._get_next():
-                # Only append result if title is not empty
-                results = results + result
-            return results
+        results = list()
+        for result in self._get_next():
+            # Only append result if title is not empty
+            results = results + result
+        return results
 
 
 def query(query="", id_list=[], prune=True, max_results=None, start=0, sort_by="relevance",
@@ -222,32 +214,32 @@ def query(query="", id_list=[], prune=True, max_results=None, start=0, sort_by="
         start = start,
         max_chunk_results=max_chunk_results)
 
-    return search.download(iterative=iterative)
+    return search.download()
 
 
-def slugify(obj):
-    # Remove special characters from object title
-    filename = '_'.join(re.findall(r'\w+', obj.get('title', 'UNTITLED')))
-    # Prepend object id
-    filename = "%s.%s" % (obj.get('pdf_url').split('/')[-1], filename)
-    return filename
+#def slugify(obj):
+#    # Remove special characters from object title
+#    filename = '_'.join(re.findall(r'\w+', obj.get('title', 'UNTITLED')))
+#    # Prepend object id
+#    filename = "%s.%s" % (obj.get('pdf_url').split('/')[-1], filename)
+#    return filename
 
 
-def download(obj, dirpath='./', slugify=slugify, prefer_source_tarfile=False):
-    """
-    Download the .pdf corresponding to the result object 'obj'. If prefer_source_tarfile==True, download the source .tar.gz instead.
-    """
-    if not obj.get('pdf_url', ''):
-        print("Object has no PDF URL.")
-        return
-    if dirpath[-1] != '/':
-        dirpath += '/'
-    if prefer_source_tarfile:
-        url = re.sub(r'/pdf/', "/src/", obj['pdf_url'])
-        path = dirpath + slugify(obj) + '.tar.gz'
-    else:
-        url = obj['pdf_url']
-        path = dirpath + slugify(obj) + '.pdf'
-
-    urlretrieve(url, path)
-    return path
+#def download(obj, dirpath='./', slugify=slugify, prefer_source_tarfile=False):
+#    """
+#    Download the .pdf corresponding to the result object 'obj'. If prefer_source_tarfile==True, download the source .tar.gz instead.
+#    """
+#    if not obj.get('pdf_url', ''):
+#        print("Object has no PDF URL.")
+#        return
+#    if dirpath[-1] != '/':
+#        dirpath += '/'
+#    if prefer_source_tarfile:
+#        url = re.sub(r'/pdf/', "/src/", obj['pdf_url'])
+#        path = dirpath + slugify(obj) + '.tar.gz'
+#    else:
+#        url = obj['pdf_url']
+#        path = dirpath + slugify(obj) + '.pdf'
+#
+#    urlretrieve(url, path)
+#    return path
